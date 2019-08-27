@@ -148,7 +148,7 @@ ggplot(aes(x=FP/(FP+TN),y=TP/(TP+FN),
                                                                         var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.))+
   geom_point(alpha=1)+
   theme_light()+theme(legend.position = "right")+
-  scale_shape(name="Diameter")+scale_color_brewer(name="Error len",palette = "Paired",labels = function(x) (paste(x,"k(=11)")))+
+  scale_shape(name="Diameter")+scale_color_brewer(name="Error len",palette = "Paired",labels = function(x) (paste(x,"× k (=11)")))+
   scale_x_continuous(name="FPR",labels=percent)+
   scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))+coord_cartesian(ylim=c(0.13,1))
 ggsave("sum-len-diam.pdf",width=5,height = 4.2)
