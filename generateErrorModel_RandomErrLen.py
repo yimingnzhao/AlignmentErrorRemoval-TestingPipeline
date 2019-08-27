@@ -103,8 +103,7 @@ def getLastCharInRange( sequence, length ):
     while char_count < length:
         # Checks if current_index has become negative and exits program if true
         if current_index < 0:
-            print("Error: Cannot generate error sequence as error length is greater than the valid sequence length" );
-            return -1;
+            return 0
         current_char = sequence[current_index];
         # Only increments char_count if the char is not a gap
         if not current_char == "-":

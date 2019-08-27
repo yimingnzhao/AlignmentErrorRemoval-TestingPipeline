@@ -64,6 +64,24 @@ def reformatFile( path, new_file ):
     f.close();
     result_f.close();
 
+
+"""
+Gets the number of non-gap characters in the sequence
+
+Args: 
+    seq (str): the current sequence
+
+Return:
+    int: the number of non-gap characters
+"""
+def getCharsInSequence( seq ):
+    count = 0
+    for char in seq:
+        if char != '-':
+            count += 1
+    return count
+
+
     
 """
 Uniformly chooses the alignments to contain errors
@@ -71,17 +89,28 @@ Uniformly chooses the alignments to contain errors
 Args:
     length (int): the number of erroneous alignments
     size (int): the total number of alignments
+    chars_in_each_seq (list): the number of characters in each sequence
+    err_len (int): the length of an error
 
 Return:
     list: list of sequence indices to modify
 """
-def getErrSequences( length, size ):
+def getErrSequences( length, size, chars_in_each_seq, err_len ):
+    count = 0
+    valid_seq = {}
+    for i in range(len(chars_in_each_seq)):
+        if chars_in_each_seq[i] >= err_len:
+            valid_seq[count] = i
+            count += 1
+    if count < length:
+        print("Impossible to generate errors")
+        sys.exit()
     sequence_errs = []
     for i in range( length ):
         while True:
-            rand_seq_idx = random.randint( 1, size );
-            if not rand_seq_idx in sequence_errs:
-                sequence_errs.append( rand_seq_idx );
+            rand_seq_idx = random.randint( 0, count - 1 );
+            if not (rand_seq_idx in sequence_errs):
+                sequence_errs.append( valid_seq[rand_seq_idx] + 1 );
                 break;
     sequence_errs.sort( reverse=True );
     return sequence_errs
@@ -207,6 +236,7 @@ reformatFile( data_file, reformat_file );
 # Gets data about reformatted alignment file
 num_alignments = 0;
 chars_in_alignment = 0;
+chars_in_each_sequence = []
 with open( reformat_file, "r" ) as file_object:
     for line in file_object:
         if line[0] == ">":
@@ -214,6 +244,7 @@ with open( reformat_file, "r" ) as file_object:
         if chars_in_alignment == 0:
             chars_in_alignment = len( line );
         num_alignments += 1;
+        chars_in_each_sequence.append(getCharsInSequence(line))
 sys.stderr.write("Number of Alignments: " + str(num_alignments) + "\n");
 sys.stderr.write("Chars in Alignment: " + str(chars_in_alignment) + "\n");
 
@@ -224,7 +255,7 @@ if ( num_alignments < num_erroneous_alignments ):
 f = open( reformat_file, "r" );
 error_f = open( error_file, "a" );
 pos_f = open( err_pos_file, "a" )
-sequence_errs = getErrSequences( num_erroneous_alignments, num_alignments );
+sequence_errs = getErrSequences( num_erroneous_alignments, num_alignments, chars_in_each_sequence, sequence_error_len );
 count = 0;
 with open( reformat_file, "r" ) as file_object:
     for line in file_object:
