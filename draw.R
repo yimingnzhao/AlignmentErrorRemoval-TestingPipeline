@@ -1,16 +1,20 @@
 require(ggplot2); require(scales); require(reshape2)
-d=(read.csv("allres.csv",sep="\t",header=F))
+
+#d=(read.csv("allres.csv",sep="\t",header=F))
+d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres.csv", sep="\t", header=F))
 names(d) <- c("E","DR","V3","DR2","V5","Diameter","PD","N","varname","var","V11","Rep","FP","FN","TP","TN")
 
 nlabels = c("1","2%","5%","10%","20%")
 
+# K - Recall vs Diameter
 ggplot(aes(x=Diameter,y=TP/(TP+FN), 
-           color=as.factor(var)),data=d[d$E=="16S.B_K" & d$var<39,])+geom_point(alpha=0.5)+
+  color=as.factor(var)),data=d[d$E=="16S.B_K" & d$var<39,])+geom_point(alpha=0.5)+
   theme_classic()+geom_smooth()+scale_y_continuous("Recall")+
   scale_shape(name="")+scale_color_brewer(palette = "Paired",name="k")
 ggsave("Recall-k.pdf",width = 6,height = 6)
 
 
+# K - FPR vs Diameter
 ggplot(aes(x=Diameter,y=FP/(FP+TN)+0.0001, 
       color=as.factor(var)),data=d[d$E=="16S.B_K" & d$var<39,])+geom_point(alpha=0.5)+
   theme_classic()+geom_smooth()+
