@@ -32,20 +32,20 @@ for file in $1/*; do
 	for (( i=0; i<${#len_of_err_multiplier_arr[@]}; i++ )); do
 		err_len_multiplier=${len_of_err_multiplier_arr[$i]}
 		echo "Choosing alignments from $aln_file for the error length multiplier $err_len_multiplier..."
-		python chooseAlignments.py $aln_file $number_of_alignments
+		python chooseSequences.py $aln_file $number_of_alignments
 		for (( j=0; j<$repititions; j++ )); do
 			description="$aln_file\terror_length_multipler:$err_len_multiplier\trepitition:$j"
 			len_of_err=`awk -v k=$value_of_k -v mult=$err_len_multiplier 'BEGIN { printf("%.0f", k * mult); }'`
 			echo "Generating error model for the error length multiplier $err_len_multiplier, repitition $j..."
-			num_alignments=$((`wc -l < chosen_alignments.fasta` / 2))
-			python generateErrorModel.py chosen_alignments.fasta $(($num_alignments / $num_err_aln_divisor)) $len_of_err DNA
+			num_alignments=$((`wc -l < chosen_sequences.fasta` / 2))
+			python generateErrorModel.py chosen_sequences.fasta $(($num_alignments / $num_err_aln_divisor + 1)) $len_of_err DNA
 			echo "Running the correction algorithm..."
 			julia correction.jl -k $value_of_k -m X -a N error.fasta > OUTPUT 2> /dev/null
 			echo "Getting error rates for the correction algorithm..."
 			python getErrorRates.py position.fasta error.fasta OUTPUT $description >> $output_file 2>> $format_output_file
 			rm reformat.fasta error.fasta position.fasta OUTPUT
 		done
-		rm chosen_alignments.fasta
+		rm chosen_sequences.fasta
 	done
 done
 

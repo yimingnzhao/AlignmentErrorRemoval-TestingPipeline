@@ -88,11 +88,11 @@ formatted_output_file="FORMATTED_OUTPUT"
 
 # Chooses alignments
 echo "Choosing alignments..."
-python chooseAlignments.py $data_file $num_alignments_to_choose
+python chooseSequences.py $data_file $num_alignments_to_choose
 
 # Generates an error model
 echo "Generating error model..."
-python generateErrorModel.py "chosen_alignments.fasta" $num_error_alignments $len_of_error
+python generateErrorModel.py "chosen_sequences.fasta" $num_error_alignments $len_of_error
 
 for (( i=0; i<$repititions; i++ )); do
 	description="$data_file\tnum_alignments:$num_alignments_to_choose\tnum_err_aln:$num_error_alignments\terr_len:$len_of_error\tval_of_k:$value_of_k\trepitition:$i"
@@ -102,7 +102,7 @@ for (( i=0; i<$repititions; i++ )); do
 	rm reformat.fasta error.fasta OUTPUT
 done
 
-rm chosen_alignments.fasta
+rm chosen_sequences.fasta
 
 unix2dos $formatted_output_file 2> /dev/null
 

@@ -29,19 +29,19 @@ format_output_file="FORMATTED_OUTPUT"
 for file in $1/*; do
 	aln_file=$file
 	echo "Choosing alignments from $aln_file..."
-	python chooseAlignments.py $aln_file $number_of_alignments
+	python chooseSequences.py $aln_file $number_of_alignments
 	for (( j=0; j<$repititions; j++ )); do
 		description="$aln_file\terror_length_multipler:RANDOM\trepitition:$j"
 		echo "Generating error model, repitition $j..."
-		num_alignments=$((`wc -l < chosen_alignments.fasta` / 2))
-		python generateErrorModel_RandomErrLen.py chosen_alignments.fasta $(($num_alignments / $num_err_aln_divisor)) $value_of_k $data_type
+		num_alignments=$((`wc -l < chosen_sequences.fasta` / 2))
+		python generateErrorModel_RandomErrLen.py chosen_sequences.fasta $(($num_alignments / $num_err_aln_divisor + 1)) $value_of_k $data_type
 		echo "Running the correction algorithm..."
 		julia correction.jl -k $value_of_k -m X -a N -n error.fasta > OUTPUT 2> /dev/null
 		echo "Getting error rates for the correction algorithm..."
 		python getErrorRates.py reformat.fasta error.fasta OUTPUT $description >> $output_file 2>> $format_output_file
 		rm reformat.fasta error.fasta OUTPUT
 	done
-	rm chosen_alignments.fasta
+	rm chosen_sequences.fasta
 done
 
 

@@ -27,8 +27,8 @@ format_output_file="FORMATTED_OUTPUT"
 for file in $1/*; do
 	aln_file=$file
 	echo "Choosing alignments from $aln_file..."
-	python chooseAlignments.py $aln_file $number_of_alignments
-	num_alignments=$((`wc -l < chosen_alignments.fasta` / 2))
+	python chooseSequences.py $aln_file $number_of_alignments
+	num_alignments=$((`wc -l < chosen_sequences.fasta` / 2))
 	num_err_aln_divisor_arr=($num_alignments 50 20 10 5)	
 
 	# Loops through the number of alignment divisors array and then the number of repititions for each divisor
@@ -37,7 +37,7 @@ for file in $1/*; do
 		for (( j=0; j<$repititions; j++ )); do
 			description="$aln_file\terroneous_alignments_num_divisor:$num_err_aln_divisor\trepitition:$j"
 			echo "Generating error model for the number of error alignments divisor $num_err_aln_divisor, repitition $j..."
-			python generateErrorModel.py chosen_alignments.fasta $(($num_alignments / $num_err_aln_divisor)) $(($value_of_k * $len_of_err_multiplier)) DNA
+			python generateErrorModel.py chosen_sequences.fasta $(($num_alignments / $num_err_aln_divisor + 1)) $(($value_of_k * $len_of_err_multiplier)) DNA
 			echo "Running the correction algorithm..."
 			julia correction.jl -k $value_of_k -m X -a N error.fasta > OUTPUT 2> /dev/null
 			echo "Getting error rates for the correction algorithm..."
@@ -45,7 +45,7 @@ for file in $1/*; do
 			rm reformat.fasta error.fasta position.fasta OUTPUT
 		done
 	done
-	rm chosen_alignments.fasta
+	rm chosen_sequences.fasta
 
 done
 
