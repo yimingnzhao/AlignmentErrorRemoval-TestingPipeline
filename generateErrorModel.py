@@ -4,6 +4,7 @@ import os
 
 RNA_DATA = ["A", "U", "G", "C"];
 DNA_DATA = ["A", "T", "G", "C"];
+AA_DATA = ["A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V"]
 
 
 """
@@ -212,6 +213,8 @@ sequence_error_len = sys.argv[3];
 data_type = sys.argv[4];
 if data_type == "RNA":
     data_type = RNA_DATA
+elif data_type == "AA":
+    data_type = AA_DATA
 else:
     data_type = DNA_DATA
 if not isInt( num_erroneous_alignments ):

@@ -4,6 +4,8 @@ import os
 
 RNA_DATA = ["A", "U", "G", "C"];
 DNA_DATA = ["A", "T", "G", "C"];
+AA_DATA = ["A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V"]
+
 
 """
 Checks if an input string is an integer
@@ -229,6 +231,8 @@ sequence_errs = getErrSequences( num_erroneous_alignments, num_alignments );
 count = 0;
 if  data_type == "RNA":
     data_type = RNA_DATA
+elif data_type == "AA":
+    data_type = AA_DATA
 else:
     data_type = DNA_DATA
 with open( reformat_file, "r" ) as file_object:
