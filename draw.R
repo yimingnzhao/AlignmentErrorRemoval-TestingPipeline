@@ -1,8 +1,10 @@
 require(ggplot2); require(scales); require(reshape2)
 
 #d=(read.csv("allres.csv",sep="\t",header=F))
-d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres.csv", sep="\t", header=F))
-names(d) <- c("E","DR","V3","DR2","V5","Diameter","PD","N","varname","var","V11","Rep","FP","FN","TP","TN")
+#d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres.csv", sep="\t", header=F))
+#names(d) <- c("E","DR","V3","DR2","V5","Diameter","PD","N","varname","var","V11", "Rep","FP","FN","TP","TN")
+d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/results_v2.csv", sep=",", header=F))
+names(d) <- c("E","DR","V3","DR2","V5","Diameter","PD","N","varname","var","Rep","FP0", "FN0", "TP0", "TN0", "FP","FN","TP","TN")
 
 nlabels = c("1","2%","5%","10%","20%")
 
@@ -129,7 +131,8 @@ ggsave("ROC-n-2.pdf",width = 6,height = 6)
 ggplot(aes(x=Diameter,y=TP/(TP+FN),color=as.factor(var)),data=d[d$E=="Hackett_ErrLen" & d$var<32,])+
   geom_point(alpha=0.5)+
   theme_classic()+geom_smooth()+scale_y_continuous("Recall")+
-  scale_shape(name="")+scale_color_brewer(palette = "Paired",name="error len", labels = function(x) (paste(x, intToUtf8(215), "k (=11)")))
+  scale_shape(name="")+scale_color_brewer(palette = "Paired",name="error len", labels = function(x) (paste(x, intToUtf8(215), "k (=11)")))+
+  geom_vline(aes(xintercept = (FP0!=0)*Diameter), alpha=0.1)
 ggsave("Hackett-RecallvDiameter-ErrLen.pdf",width=6,height=6)
 
 
@@ -137,7 +140,8 @@ ggsave("Hackett-RecallvDiameter-ErrLen.pdf",width=6,height=6)
 ggplot(aes(x=Diameter,y=TP/(TP+FN),color=as.factor(var)),data=d[d$E=="Hackett_K",])+
   geom_point(alpha=0.5)+
   theme_classic()+geom_smooth(se=F)+scale_y_continuous("Recall")+
-  scale_shape(name="")+scale_color_brewer(palette = "Paired",name="k")
+  scale_shape(name="")+scale_color_brewer(palette = "Paired",name="k")+
+  geom_vline(aes(xintercept = (FP0!=0)*Diameter), alpha=0.1)
 ggsave("Hackett-RecallvDiameter-K.pdf",width=6,height=6)
 
 
