@@ -4,6 +4,7 @@ require(ggplot2); require(scales); require(reshape2)
 #d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres.csv", sep="\t", header=F))
 #names(d) <- c("E","DR","V3","DR2","V5","Diameter","PD","N","varname","var","V11", "Rep","FP","FN","TP","TN")
 d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres_v2.csv", sep=",", header=F))
+d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres_union.csv", sep=",", header=F))
 names(d) <- c("E","DR","V3","DR2","V5","Diameter","PD","N","varname","var","Rep","FP0", "FN0", "TP0", "TN0", "FP","FN","TP","TN")
 
 nlabels = c("1","2%","5%","10%","20%")
@@ -173,9 +174,13 @@ summ_roc <- function(d2,form) {
   ad2=cbind(dcast(d2, form ,fun.aggregate=sum,value.var = c("FP")),
             dcast(d2, form ,fun.aggregate=sum,value.var = c("FN"))[,length(ad2)],
             dcast(d2, form ,fun.aggregate=sum,value.var = c("TP"))[,length(ad2)],
-            dcast(d2, form ,fun.aggregate=sum,value.var = c("TN"))[,length(ad2)]
+            dcast(d2, form ,fun.aggregate=sum,value.var = c("TN"))[,length(ad2)],
+            dcast(d2, form ,fun.aggregate=sum,value.var = c("FN0"))[,length(ad2)],
+            dcast(d2, form ,fun.aggregate=sum,value.var = c("TP0"))[,length(ad2)],
+            dcast(d2, form ,fun.aggregate=sum,value.var = c("TN0"))[,length(ad2)],
+            dcast(d2, form ,fun.aggregate=sum,value.var = c("FP0"))[,length(ad2)]
             )
-  names(ad2)[(length(names(ad2))-3):(length(names(ad2)))]=c("FP","FN","TP","TN")
+  names(ad2)[(length(names(ad2))-7):(length(names(ad2)))]=c("FP","FN","TP","TN", "FN0", "TP0", "TN0", "FP0")
   ad2
 }
 
@@ -202,15 +207,16 @@ ggsave("sum-k.pdf",width=4,height = 4)
 
 
 # 16S.B: K - Recall vs FPR (sum) [includes k and diameter] 
-options(digits = 2)
-ggplot(aes(x=FP/(FP+TN),y=TP/(TP+FN), 
-           color=as.factor(var),shape=`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`),data=summ_roc(d[d$E=="16S.B_K",],                                                                                                         var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.))+
-  geom_point(alpha=1)+
-  theme_light()+theme(legend.position = "right")+
+options(digits = 5)
+d2=summ_roc(d[d$E=="16S.B_K" & d$var < 40 & d$N > 19,], var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.)
+A = data.frame(x=d2$FP/(d2$FP+d2$TN),y=d2$TP/(d2$TP+d2$FN), var=d2$var, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+B = data.frame(x=d2$FP0/(d2$FP0+d2$TN0),y=as.vector(matrix(1.1,nrow=nrow(d2))), var=d2$var, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+ggplot(data=A, aes(x, y, color=as.factor(var), shape=as.factor(DR))) + geom_point(alpha=1)+
+  theme_light()+theme(legend.position = "right")+geom_point(data=B)+
   scale_shape(name="Diameter")+scale_color_brewer(name="k",palette = "Paired",labels = function(x) (paste(x)))+
   scale_x_continuous(name="FPR",labels=percent)+
-  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))+coord_cartesian(ylim=c(0.13,1))
-ggsave("Hackett-ROC-K.pdf",width=6,height = 6)
+  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))+coord_cartesian(xlim=c(0,0.00015), ylim=c(0.9,1.15))
+ggsave("16S.B_ROC-K.pdf",width=6,height = 6)
 
 
 # 16S.B: ErrLen - Recall vs FPR (sum)
@@ -225,14 +231,14 @@ ggsave("sum-len.pdf",width=4,height = 4)
 
 # 16S.B: ErrLen - Recall vs FPR (sum) [includes error length and diameter] 
 options(digits = 2)
-ggplot(aes(x=FP/(FP+TN),y=TP/(TP+FN), 
-      color=as.factor(var),shape=`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`),data=summ_roc(d[d$E=="16S.B_ErrLen",],
-      var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.))+
-  geom_point(alpha=1)+
-  theme_light()+theme(legend.position = "right")+
-  scale_shape(name="Diameter")+scale_color_brewer(name="Error len",palette = "Paired",labels = function(x) (paste(x, intToUtf8(215), "k (=11)")))+
+d2=summ_roc(d[d$E=="16S.B_ErrLen" & d$N > 19,], var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.)
+A = data.frame(x=d2$FP/(d2$FP+d2$TN),y=d2$TP/(d2$TP+d2$FN), var=d2$var, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+B = data.frame(x=d2$FP0/(d2$FP0+d2$TN0),y=as.vector(matrix(1.1,nrow=nrow(d2))), var=d2$var, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+ggplot(data=A, aes(x, y, color=as.factor(var), shape=as.factor(DR))) + geom_point(alpha=1)+
+  theme_light()+theme(legend.position = "right")+geom_point(data=B)+
+  scale_shape(name="Diameter")+scale_color_brewer(name="Error Length",palette = "Paired",labels = function(x) (paste(x, intToUtf8(215), "k (=11)")))+
   scale_x_continuous(name="FPR",labels=percent)+
-  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))+coord_cartesian(ylim=c(0.13,1))
+  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))+coord_cartesian(ylim=c(0.13,1.15))
 ggsave("sum-len-diam.pdf",width=5,height = 4.2)
 
 
@@ -277,26 +283,26 @@ ggsave("Hackett-ROC-ErrLen.pdf",width=6,height=6)
 
 
 # AA-RV100-BBA0039: K - Recall vs FPR (sum) [includes k and diameter] 
-options(digits = 2)
-ggplot(aes(x=FP/(FP+TN),y=TP/(TP+FN), 
-      color=as.factor(var),shape=`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`),data=summ_roc(d[d$E=="small-10-aa-RV100-BBA0039_K",],
-      var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.))+
-  geom_point(alpha=1)+
-  theme_light()+theme(legend.position = "right")+
+options(digits = 5)
+d2=summ_roc(d[d$E=="small-10-aa-RV100-BBA0039_K" & d$N > 19,], var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.)
+A = data.frame(x=d2$FP/(d2$FP+d2$TN),y=d2$TP/(d2$TP+d2$FN), var=d2$var, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+B = data.frame(x=d2$FP0/(d2$FP0+d2$TN0),y=as.vector(matrix(1.1,nrow=nrow(d2))), var=d2$var, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+ggplot(data=A, aes(x, y, color=as.factor(var), shape=as.factor(DR))) + geom_point(alpha=1)+
+  theme_light()+theme(legend.position = "right")+geom_point(data=B)+
   scale_shape(name="Diameter")+scale_color_brewer(name="k",palette = "Paired",labels = function(x) (paste(x)))+
   scale_x_continuous(name="FPR",labels=percent)+
-  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))+coord_cartesian(ylim=c(0.13,1))
+  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))+coord_cartesian(ylim=c(0.8,1.15), xlim=c(0, 0.0025))
 ggsave("AA-ROC-K.pdf",width=6,height=6)
 
 
 # AA-RV100-BBA0039: ErrLen - Recall vs FPR (sum) [includes k and diameter] 
 options(digits = 2)
-ggplot(aes(x=FP/(FP+TN),y=TP/(TP+FN), 
-      color=as.factor(var),shape=`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`),data=summ_roc(d[d$E=="small-10-aa-RV100-BBA0039_ErrLen",],
-      var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.))+
-  geom_point(alpha=1)+
-  theme_light()+theme(legend.position = "right")+
+d2=summ_roc(d[d$E=="small-10-aa-RV100-BBA0039_ErrLen",], var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.)
+A = data.frame(x=d2$FP/(d2$FP+d2$TN),y=d2$TP/(d2$TP+d2$FN), var=d2$var, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+B = data.frame(x=d2$FP0/(d2$FP0+d2$TN0),y=as.vector(matrix(1.1,nrow=nrow(d2))), var=d2$var, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+ggplot(data=A, aes(x, y, color=as.factor(var), shape=as.factor(DR))) + geom_point(alpha=1)+
+  theme_light()+theme(legend.position = "right")+geom_point(data=B)+
   scale_shape(name="Diameter")+scale_color_brewer(name="Error Length",palette = "Paired",labels = function(x) (paste(x, intToUtf8(215), "k (=11)")))+
   scale_x_continuous(name="FPR",labels=percent)+
-  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))+coord_cartesian(ylim=c(0.13,1))
+  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))+coord_cartesian(ylim=c(0.3,1.15))
 ggsave("AA-ROC-ErrLen.pdf",width=6,height=6)
