@@ -5,6 +5,7 @@ require(ggplot2); require(scales); require(reshape2)
 #names(d) <- c("E","DR","V3","DR2","V5","Diameter","PD","N","varname","var","V11", "Rep","FP","FN","TP","TN")
 d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres_v2.csv", sep=",", header=F))
 d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres_union.csv", sep=",", header=F))
+d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres_union_v2.csv", sep=",", header=F))
 names(d) <- c("E","DR","V3","DR2","V5","Diameter","PD","N","varname","var","Rep","FP0", "FN0", "TP0", "TN0", "FP","FN","TP","TN")
 
 nlabels = c("1","2%","5%","10%","20%")
@@ -24,6 +25,21 @@ ggplot(aes(x=Diameter,y=FP/(FP+TN)+0.0001,
   scale_shape(name="")+scale_color_brewer(palette = "Paired",name="k")+scale_y_log10(name="FPR")
 ggsave("FPR-k.pdf",width = 6,height = 6)
 
+
+ggplot(aes(x=Diameter,y=FP,color=as.factor(var)),data=d[d$E=="16S.B_ErrLen",])+
+  geom_point(alpha=0.5)+
+  theme_classic()+geom_smooth(se=F)+
+  scale_shape(name="")+scale_color_brewer(palette = "Paired",name="error len")+
+  scale_y_continuous(name="FPR")
+ggsave("old-totalbp.pdf",width = 6,height = 6)
+
+ggplot(aes(x=Diameter,y=FP/N,color=as.factor(var)),data=d[d$E=="16S.B_UnionErrLen2",])+
+  geom_point(alpha=0.5)+
+  theme_classic()+geom_smooth(se=F)+
+  scale_shape(name="")+scale_color_brewer(palette = "Paired",name="error len")+
+  scale_y_continuous(name="FPR")#+
+  coord_cartesian(ylim=c(0,1300))
+ggsave("new-totalbp.pdf",width = 6,height = 6)
 
 # 16S.B: K - Recall vs K (violin)
 ggplot(aes(x=var,y=TP/(TP+FN), shape=cut((FP/(FP+TN)),breaks=c(-1,0,0.001,0.1,1)),
@@ -74,11 +90,10 @@ ggsave("FPR-errlen.pdf",width = 6,height = 6)
 
 
 # 16S.B: ErrLen - Recall vs Diameter 
-ggplot(aes(x=Diameter,y=TP/(TP+FN),color=as.factor(var)),data=d[d$E=="16S.B_ErrLen",])+
+ggplot(aes(x=Diameter,y=TP/(TP+FN),color=as.factor(var)),data=d[d$E=="16S.B_UnionErrLen2" & d$N > 19,])+
   geom_point(alpha=0.5)+
   theme_classic()+geom_smooth()+scale_y_continuous("Recall")+
-  scale_shape(name="")+scale_color_brewer(palette = "Paired",name="error len", labels = function(x) (paste(x, intToUtf8(215), "k (=11)")))+
-  geom_vline(aes(xintercept = (FP0!=0)*Diameter), alpha=0.1)
+  scale_shape(name="")+scale_color_brewer(palette = "Paired",name="error len", labels = function(x) (paste(x, intToUtf8(215), "k (=11)")))
 ggsave("Recall-errlen.pdf",width = 6,height = 6)
 
 
@@ -231,14 +246,14 @@ ggsave("sum-len.pdf",width=4,height = 4)
 
 # 16S.B: ErrLen - Recall vs FPR (sum) [includes error length and diameter] 
 options(digits = 2)
-d2=summ_roc(d[d$E=="16S.B_ErrLen" & d$N > 19,], var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.)
+d2=summ_roc(d[d$E=="16S.B_UnionErrLen2" & d$N > 19,], var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.)
 A = data.frame(x=d2$FP/(d2$FP+d2$TN),y=d2$TP/(d2$TP+d2$FN), var=d2$var, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
 B = data.frame(x=d2$FP0/(d2$FP0+d2$TN0),y=as.vector(matrix(1.1,nrow=nrow(d2))), var=d2$var, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
 ggplot(data=A, aes(x, y, color=as.factor(var), shape=as.factor(DR))) + geom_point(alpha=1)+
-  theme_light()+theme(legend.position = "right")+geom_point(data=B)+
+  theme_light()+theme(legend.position = "right")+#geom_point(data=B)+
   scale_shape(name="Diameter")+scale_color_brewer(name="Error Length",palette = "Paired",labels = function(x) (paste(x, intToUtf8(215), "k (=11)")))+
   scale_x_continuous(name="FPR",labels=percent)+
-  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))+coord_cartesian(ylim=c(0.13,1.15))
+  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))+coord_cartesian(xlim=c(0, 0.0015), ylim=c(0,1))
 ggsave("sum-len-diam.pdf",width=5,height = 4.2)
 
 
