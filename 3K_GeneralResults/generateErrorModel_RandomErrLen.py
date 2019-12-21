@@ -164,7 +164,7 @@ def setErrSequence( sequence, length, data ):
             count += 1;
             rand_segment = data[ random.randint( 0, len( data ) - 1 ) ];
             err_sequence = err_sequence[0:current_pos] + rand_segment + err_sequence[(current_pos + 1):];
-            pos_sequence = pos_sequence[0:current_pos] + "N" + err_sequence[(current_pos + 1):];
+            pos_sequence = pos_sequence[0:current_pos] + "." + err_sequence[(current_pos + 1):];
         current_pos += 1;
     return (err_sequence, pos_sequence);
 
@@ -268,7 +268,7 @@ with open( reformat_file, "r" ) as file_object:
             
             #HEREEEEE
             
-            sequence_error_len = int(abs(np.random.normal(35, 10)))
+            sequence_error_len = int(abs(np.random.normal(50, 10)))
             sequences = setErrSequence( line, sequence_error_len, data_type )
             if sequences[0] == 0 and sequences[1] == 0:
                 f.close();

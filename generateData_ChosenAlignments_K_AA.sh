@@ -47,7 +47,7 @@ for file in $1/*; do
 			len_of_err=`awk -v k=$value_of_k -v mult=$err_len_multiplier 'BEGIN { printf("%.0f", k * mult); }'`
 			echo "Generating error model, repitition $j..."
 			num_alignments=$((`wc -l < chosen_sequences.fasta` / 2))
-			python generateErrorModel.py chosen_sequences.fasta $(($num_alignments / $num_err_aln_divisor + 1)) 88 DNA
+			python generateErrorModel.py chosen_sequences.fasta $(($num_alignments / $num_err_aln_divisor + 1)) 88 AA
 			echo "Running the correction algorithm..."
 			julia-1.1.1/bin/julia correction.jl -k $value_of_k -m X -a N -n error.fasta > OUTPUT 2> /dev/null
 			echo "Getting error rates for the correction algorithm..."

@@ -45,7 +45,7 @@ for file in $1/*; do
 			rm TEMP OUTPUT
 
 			echo "Generating error model for the number of error alignments divisor $num_err_aln_divisor, repitition $j..."
-			python generateErrorModel.py chosen_sequences.fasta $(($num_alignments / $num_err_aln_divisor + 1)) $(($value_of_k * $len_of_err_multiplier)) DNA
+			python generateErrorModel.py chosen_sequences.fasta $(($num_alignments / $num_err_aln_divisor + 1)) $(($value_of_k * $len_of_err_multiplier)) AA
 			echo "Running the correction algorithm..."
 			julia-1.1.1/bin/julia correction.jl -k $value_of_k -m X -a N error.fasta > OUTPUT 2> /dev/null
 			echo "Getting error rates for the correction algorithm..."

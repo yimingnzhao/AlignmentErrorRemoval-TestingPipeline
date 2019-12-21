@@ -3,12 +3,18 @@ require(ggplot2); require(scales); require(reshape2)
 #d=(read.csv("allres.csv",sep="\t",header=F))
 #d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres.csv", sep="\t", header=F))
 #names(d) <- c("E","DR","V3","DR2","V5","Diameter","PD","N","varname","var","V11", "Rep","FP","FN","TP","TN")
-d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres_v2.csv", sep=",", header=F))
-d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres_union.csv", sep=",", header=F))
-d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres_union_v2.csv", sep=",", header=F))
+d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres.csv", sep=",", header=F))
 names(d) <- c("E","DR","V3","DR2","V5","Diameter","PD","N","varname","var","Rep","FP0", "FN0", "TP0", "TN0", "FP","FN","TP","TN")
-
+d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/3K_GeneralResults/res.csv", sep=",", header=F))
+names(d) <- c("E", "Diameter", "PD", "N", "ErrLen", "NumErrSeqDiv", "Rep", "FP0", "FN0", "TP0", "TN0", "FP", "FN", "TP", "TN")
 nlabels = c("1","2%","5%","10%","20%")
+
+ggplot(aes(x=Diameter, y=TP/(TP+FN)), data=d[d$E=="16S.B" & d$N > 10,]) + geom_point() + geom_smooth()
+ggplot(aes(x=Diameter, y=TP/(TP+FN)), data=d[d$E=="Hackett" & d$N > 10,]) + geom_point() + geom_smooth()
+ggplot(aes(x=Diameter, y=TP/(TP+FN)), data=d[d$E=="small-10-aa" & d$N > 10,]) + geom_point() + geom_smooth()
+
+
+
 
 # 16S.B: K - Recall vs Diameter
 ggplot(aes(x=Diameter,y=TP/(TP+FN), 
@@ -90,10 +96,18 @@ ggsave("FPR-errlen.pdf",width = 6,height = 6)
 
 
 # 16S.B: ErrLen - Recall vs Diameter 
-ggplot(aes(x=Diameter,y=TP/(TP+FN),color=as.factor(var)),data=d[d$E=="16S.B_UnionErrLen2" & d$N > 19,])+
+ggplot(aes(x=Diameter,y=TP/(TP+FN),color=as.factor(var)),data=d[d$E=="16S.B_UnionErrLen3k" & d$N > 19,])+
   geom_point(alpha=0.5)+
   theme_classic()+geom_smooth()+scale_y_continuous("Recall")+
-  scale_shape(name="")+scale_color_brewer(palette = "Paired",name="error len", labels = function(x) (paste(x, intToUtf8(215), "k (=11)")))
+  scale_shape(name="")+scale_color_brewer(palette = "Paired",name="error len", labels = function(x) (paste(x, intToUtf8(215), "11")))
+ggsave("Recall-errlen.pdf",width = 6,height = 6)
+
+
+# 16S.B: ErrLen - FDR vs Diameter
+ggplot(aes(x=Diameter,y=FP/(FP+TP),color=as.factor(var)),data=d[d$E=="16S.B_UnionErrLen2k" & d$N > 19,])+
+  geom_point(alpha=0.5)+
+  theme_classic()+geom_smooth(se=F)+scale_y_continuous("FDR")+scale_x_continuous("Diameter")+
+  scale_shape(name="")+scale_color_brewer(palette = "Paired",name="error len", labels = function(x) (paste(x, intToUtf8(215), "11")))
 ggsave("Recall-errlen.pdf",width = 6,height = 6)
 
 
@@ -246,12 +260,12 @@ ggsave("sum-len.pdf",width=4,height = 4)
 
 # 16S.B: ErrLen - Recall vs FPR (sum) [includes error length and diameter] 
 options(digits = 2)
-d2=summ_roc(d[d$E=="16S.B_UnionErrLen2" & d$N > 19,], var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.)
+d2=summ_roc(d[d$E=="16S.B_UnionErrLen4k" & d$N > 19,], var+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.)
 A = data.frame(x=d2$FP/(d2$FP+d2$TN),y=d2$TP/(d2$TP+d2$FN), var=d2$var, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
 B = data.frame(x=d2$FP0/(d2$FP0+d2$TN0),y=as.vector(matrix(1.1,nrow=nrow(d2))), var=d2$var, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
 ggplot(data=A, aes(x, y, color=as.factor(var), shape=as.factor(DR))) + geom_point(alpha=1)+
   theme_light()+theme(legend.position = "right")+#geom_point(data=B)+
-  scale_shape(name="Diameter")+scale_color_brewer(name="Error Length",palette = "Paired",labels = function(x) (paste(x, intToUtf8(215), "k (=11)")))+
+  scale_shape(name="Diameter")+scale_color_brewer(name="Error Length",palette = "Paired",labels = function(x) (paste(x, intToUtf8(215), "11")))+
   scale_x_continuous(name="FPR",labels=percent)+
   scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))+coord_cartesian(xlim=c(0, 0.0015), ylim=c(0,1))
 ggsave("sum-len-diam.pdf",width=5,height = 4.2)

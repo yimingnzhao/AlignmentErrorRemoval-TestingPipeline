@@ -101,5 +101,6 @@ print("FP: " + str(false_positive));
 print("FN: " + str(false_negative));
 print("TP: " + str(true_positive));
 print("TN: " + str(true_negative));
-description = description.decode('string_escape');
+#description = description.decode('unicode_escape'); #python3
+#description = description.decode('string_escape'); #python2
 sys.stderr.write(str(description) + "\t" + str(false_positive) + "\t" + str(false_negative) + "\t" + str(true_positive) + "\t" + str(true_negative) + "\n")
