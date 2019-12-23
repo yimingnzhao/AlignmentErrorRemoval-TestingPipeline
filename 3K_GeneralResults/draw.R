@@ -1,0 +1,55 @@
+require(ggplot2); require(scales); require(reshape2)
+d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/3K_GeneralResults/res.csv", sep=",", header=F))
+names(d) <- c("E", "DR", "X", "Diameter", "PD", "N", "ErrLen", "NumErrSeqDiv", "Rep", "FP0", "FN0", "TP0", "TN0", "FP", "FN", "TP", "TN")
+
+# Recall vs Diameter
+ggplot(aes(x=Diameter, y=TP/(TP+FN)), data=d[d$E=="16S.B" & d$N > 10,]) + theme_classic() + geom_point() + geom_smooth() + scale_y_continuous("Recall")
+ggplot(aes(x=Diameter, y=TP/(TP+FN)), data=d[d$E=="Hackett" & d$N > 10,]) + theme_classic() + geom_point() + geom_smooth() + scale_y_continuous("Recall")
+ggplot(aes(x=Diameter, y=TP/(TP+FN)), data=d[d$E=="small-10-aa-RV100-BBA0039" & d$N > 10,]) + theme_classic() + geom_point() + geom_smooth() + scale_y_continuous("Recall")
+
+summ_roc <- function(d2,form) {
+  ad2 = dcast(d2, form ,fun.aggregate=sum,value.var = c("FP"))
+  ad2=cbind(dcast(d2, form ,fun.aggregate=sum,value.var = c("FP")),
+            dcast(d2, form ,fun.aggregate=sum,value.var = c("FN"))[,length(ad2)],
+            dcast(d2, form ,fun.aggregate=sum,value.var = c("TP"))[,length(ad2)],
+            dcast(d2, form ,fun.aggregate=sum,value.var = c("TN"))[,length(ad2)],
+            dcast(d2, form ,fun.aggregate=sum,value.var = c("FN0"))[,length(ad2)],
+            dcast(d2, form ,fun.aggregate=sum,value.var = c("TP0"))[,length(ad2)],
+            dcast(d2, form ,fun.aggregate=sum,value.var = c("TN0"))[,length(ad2)],
+            dcast(d2, form ,fun.aggregate=sum,value.var = c("FP0"))[,length(ad2)]
+  )
+  names(ad2)[(length(names(ad2))-7):(length(names(ad2)))]=c("FP","FN","TP","TN", "FN0", "TP0", "TN0", "FP0")
+  ad2
+}
+
+options(digits = 5)
+d2=summ_roc(d[d$E=="16S.B" & d$N > 19,], ErrLen+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.)
+A = data.frame(x=d2$FP/(d2$FP+d2$TN),y=d2$TP/(d2$TP+d2$FN), ErrLen=d2$ErrLen, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+B = data.frame(x=d2$FP0/(d2$FP0+d2$TN0),y=as.vector(matrix(1.1,nrow=nrow(d2))), ErrLen=d2$ErrLen, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+ggplot(data=A, aes(x, y, color=as.factor(DR))) + geom_point(alpha=1)+
+  theme_light()+theme(legend.position = "right")+geom_point(data=B)+
+  scale_color_brewer(name="k",palette = "Paired",labels = function(x) (paste(x)))+
+  scale_x_continuous(name="FPR",labels=percent)+
+  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))#+coord_cartesian(xlim=c(0,0.00015), ylim=c(0.9,1.15))
+
+options(digits = 5)
+d2=summ_roc(d[d$E=="Hackett" & d$N > 19,], ErrLen+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.)
+A = data.frame(x=d2$FP/(d2$FP+d2$TN),y=d2$TP/(d2$TP+d2$FN), ErrLen=d2$ErrLen, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+B = data.frame(x=d2$FP0/(d2$FP0+d2$TN0),y=as.vector(matrix(1.1,nrow=nrow(d2))), ErrLen=d2$ErrLen, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+ggplot(data=A, aes(x, y, color=as.factor(DR))) + geom_point(alpha=1)+
+  theme_light()+theme(legend.position = "right")+geom_point(data=B)+
+  scale_color_brewer(name="k",palette = "Paired",labels = function(x) (paste(x)))+
+  scale_x_continuous(name="FPR",labels=percent)+
+  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))#+coord_cartesian(xlim=c(0,0.00015), ylim=c(0.9,1.15))
+
+options(digits = 5)
+d2=summ_roc(d[d$E=="small-10-aa-RV100-BBA0039" & d$N > 19,], ErrLen+cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)~.)
+A = data.frame(x=d2$FP/(d2$FP+d2$TN),y=d2$TP/(d2$TP+d2$FN), ErrLen=d2$ErrLen, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+B = data.frame(x=d2$FP0/(d2$FP0+d2$TN0),y=as.vector(matrix(1.1,nrow=nrow(d2))), ErrLen=d2$ErrLen, DR=d2$`cut(Diameter, breaks = c(0, 0.1, 0.2, 0.5, 0.8, 1), right = F)`)
+ggplot(data=A, aes(x, y, color=as.factor(DR))) + geom_point(alpha=1)+
+  theme_light()+theme(legend.position = "right")+geom_point(data=B)+
+  scale_color_brewer(name="k",palette = "Paired",labels = function(x) (paste(x)))+
+  scale_x_continuous(name="FPR",labels=percent)+
+  scale_y_continuous("Recall",labels=percent,breaks = c(0.2,0.4,0.6,0.8,1))#+coord_cartesian(xlim=c(0,0.00015), ylim=c(0.9,1.15))
+
+
