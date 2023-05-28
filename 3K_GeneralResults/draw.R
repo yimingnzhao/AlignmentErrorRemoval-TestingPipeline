@@ -1,5 +1,5 @@
 require(ggplot2); require(scales); require(reshape2)
-d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/3K_GeneralResults/res.csv", sep=",", header=F))
+d=(read.csv("./res.csv", sep=",", header=F))
 names(d) <- c("E", "DR", "X", "Diameter", "PD", "N", "ErrLen", "NumErrSeqDiv", "Rep", "FP0", "FN0", "TP0", "TN0", "FP", "FN", "TP", "TN")
 
 # Recall vs Diameter

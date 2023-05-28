@@ -1,12 +1,14 @@
 require(ggplot2); require(scales); require(reshape2)
 
 #d=(read.csv("allres.csv",sep="\t",header=F))
-#d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres.csv", sep="\t", header=F))
+#d=(read.csv("./allres.csv", sep="\t", header=F))
 #names(d) <- c("E","DR","V3","DR2","V5","Diameter","PD","N","varname","var","V11", "Rep","FP","FN","TP","TN")
-d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/allres.csv", sep=",", header=F))
+d=(read.csv("./allres.csv", sep=",", header=F))
 names(d) <- c("E","DR","V3","DR2","V5","Diameter","PD","N","varname","var","Rep","FP0", "FN0", "TP0", "TN0", "FP","FN","TP","TN")
-d=(read.csv("~/Linux Files/AlignmentErrorRemoval-TestingPipeline/3K_GeneralResults/res.csv", sep=",", header=F))
+d=(read.csv("./3K_GeneralResults/res.csv", sep=",", header=F))
 names(d) <- c("E", "Diameter", "PD", "N", "ErrLen", "NumErrSeqDiv", "Rep", "FP0", "FN0", "TP0", "TN0", "FP", "FN", "TP", "TN")
+names(d) <- c("E", "DR", "X", "Diameter", "PD", "N", "ErrLen", "NumErrSeqDiv", "Rep", "FP0", "FN0", "TP0", "TN0", "FP", "FN", "TP", "TN")
+
 nlabels = c("1","2%","5%","10%","20%")
 
 ggplot(aes(x=Diameter, y=TP/(TP+FN)), data=d[d$E=="16S.B" & d$N > 10,]) + geom_point() + geom_smooth()
